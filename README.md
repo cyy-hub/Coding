@@ -1,3 +1,7 @@
+---
+typora-copy-images-to: upload
+---
+
 [toc]
 
 # 20200524
@@ -380,7 +384,7 @@ class Solution(object):
 
 反转数字的一半：当反转数字大于原始数字的剩余时，已经处理了一半了。
 
-<img src="/Users/chenyingying/cyy/TyporaNote/2-Daily-Algorithm.assets/截屏2020-06-22下午8.01.56.png" alt="截屏2020-06-22下午8.01.56" style="zoom:33%;" />
+<img src="https://tva1.sinaimg.cn/large/007S8ZIlly1ggnzt77vvlj30vk0komze.jpg" alt="截屏2020-06-22下午8.01.56" style="zoom:33%;" />
 
 ```python
 class Solution(object):
@@ -1142,13 +1146,13 @@ class Solution(object):
 
 父亲节点与右孩子节点在列表中index 的关系：i->2i+2
 
-<img src="/Users/chenyingying/cyy/TyporaNote/2-Daily-Algorithm.assets/duipaixu.png" alt="duipaixu" style="zoom:33%;" />
+<img src="https://tva1.sinaimg.cn/large/007S8ZIlly1ggnzt7m9bvj315q0ieach.jpg" alt="duipaixu" style="zoom:33%;" />
 
 大顶堆：一棵完全二叉树，满足任一节点都比其孩子节点大
 
 小顶堆：一棵完全二叉树，满足任一节点都比其孩子节点小
 
-<img src="/Users/chenyingying/cyy/TyporaNote/2-Daily-Algorithm.assets/duipaixu1.png" alt="duipaixu1" style="zoom: 33%;" />
+<img src="https://tva1.sinaimg.cn/large/007S8ZIlly1ggnzt67oq0j311c0g8gn5.jpg" alt="duipaixu1" style="zoom: 33%;" />
 
 堆排序向下调整--根节点的左右子树都是堆，但是根节点不满足堆的性质，通过一次向下调整，将其变成一个堆
 
@@ -3466,7 +3470,7 @@ class Solution(object):
 
 递归：假设输出子集为空，每一步都向子集中添加一个新的元素，并形成一个新的子集.
 
-<img src="/Users/chenyingying/cyy/TyporaNote/2-Daily-Algorithm.assets/截屏2020-06-27下午2.17.58-3238715.png" alt="截屏2020-06-27下午2.17.58" style="zoom:33%;" />
+<img src="https://tva1.sinaimg.cn/large/007S8ZIlly1ggnzt5pz7bj30xg0nm774.jpg" alt="截屏2020-06-27下午2.17.58" style="zoom:33%;" />
 
 ```python
 import copy
@@ -3543,4 +3547,587 @@ G(n)=\sum_{i=1}^nF(i,n)
 $$
 边界情况：G(0)=1 空树，G(1)=1 序列长度为1
 
-![截屏2020-07-02下午11.00.11](/Users/chenyingying/cyy/Coding/README.assets/截屏2020-07-02下午11.00.11.png)
+![截屏2020-07-02下午11.00.11](https://tva1.sinaimg.cn/large/007S8ZIlly1ggnzt83ot5j316o0gk425.jpg)
+
+
+
+```python
+class Solution(object):
+    def numTrees(self, n):
+        """
+        :type n: int
+        :rtype: int
+        """
+        dp=[0]*(n+1)
+        dp[0],dp[1]=1,1
+        for i in range(2,n+1):
+            for j in range(1,i+1):        #
+                dp[i]+=dp[j-1]*dp[i-j]
+        return dp[-1]
+
+```
+
+
+
+## 2-leetcode 98.验证二叉搜索树
+
+### 1.中序遍历是一个升序
+
+技巧：前一个遍历元素的初始化。
+
+```python
+# Definition for a binary tree node.
+# class TreeNode(object):
+#     def __init__(self, x):
+#         self.val = x
+#         self.left = None
+#         self.right = None
+
+class Solution(object):
+    def isValidBST(self, root):
+        """
+        :type root: TreeNode
+        :rtype: bool
+        """
+        pre_val=0
+        node=root
+        while(node):
+            pre_val=node.val-1
+            node=node.left
+        node,stack=root,[]
+        while(stack or node):
+            if node:
+                stack.append(node)
+                node=node.left
+            else:
+                node=stack.pop()
+                if node.val<=pre_val:
+                    return False
+                pre_val=node.val
+                node=node.right
+        return True
+
+
+            
+```
+
+
+
+### 2.递归，维护一个子树取值的上下界
+
+```python
+# Definition for a binary tree node.
+# class TreeNode(object):
+#     def __init__(self, x):
+#         self.val = x
+#         self.left = None
+#         self.right = None
+
+class Solution(object):
+    def isValidBST(self, root):
+        """
+        :type root: TreeNode
+        :rtype: bool
+        """
+        def dfs(node,low,high):
+            if node==None:
+                return True
+            if node.val<=low or node.val>=high:
+                return False
+            if  not dfs(node.left,low,node.val):  # 只要有一个不满足，就错，
+                return False
+            if  not dfs(node.right,node.val,high):# 对的情况很复杂
+                return False
+            return True
+        return dfs(root,float("-INf"),float("INF"))
+            
+```
+
+
+
+# 20200703
+
+## 1-leetcode 84.柱状图中的最大矩形
+
+考虑的两个最基本的要素：宽和高
+
+暴力法求解：两层循环枚举宽度，高度为宽度范围内最小数组数值。时间复杂度为o(n^2)
+
+单调栈：枚举高，枚举某一根柱子I作为高h=height[i]; 向两侧进行扩展，使得柱子的高度均不小于h,直至找到i能够扩展到的最大范围
+
+难点：求出一根柱子左侧最近且高度小于height[i]的柱子 的标号
+
+​	性质：两根柱子标号j0<j1且height[j0]<height[j1],那么j0一定不是j1后面柱子的左侧最近最矮柱子。
+
+​	解决：维护一个数据结构，存放柱子下标：j0,j1,....js,有height[j0]<height[j1]<,...,<height[js]
+
+```python
+class Solution(object):
+    def largestRectangleArea(self, heights):
+        """
+        :type heights: List[int]
+        :rtype: int
+        """
+        n=len(heights)
+        left,right=[0]*n,[0]*n
+        momo_stack=[]
+        for i in range(n):
+            while(momo_stack and heights[i]<=heights[momo_stack[-1]]):
+                momo_stack.pop()
+            left[i]=momo_stack[-1] if momo_stack else -1
+            momo_stack.append(i)
+        momo_stack=[]
+        for i in range(n-1,-1,-1):
+            while(momo_stack and heights[momo_stack[-1]]>=heights[i]):
+                momo_stack.pop()
+            right[i]=momo_stack[-1] if momo_stack else n
+            momo_stack.append(i)
+        ans=0
+        #print(left,right)
+        for i in range(n):
+            ans=max(ans,(right[i]-left[i]-1)*heights[i])  # 宽度：right-left+1-2
+        return ans
+
+```
+
+# 20200704
+
+## 1-leetcode 114.二叉树展开成链表
+
+从一棵二叉树展开成一个先序遍历顺序的链表。
+
+实际操作，将二叉树的右子树推入堆栈，将左子树接到右子树位置，将左子树置为None，将当前处理节点转换成右子树节点，不断递归往下，直至当前节点的左子树为None，从堆栈中弹出最后进去的右子树进行处理。
+
+```python
+# Definition for a binary tree node.
+# class TreeNode(object):
+#     def __init__(self, x):
+#         self.val = x
+#         self.left = None
+#         self.right = None
+
+class Solution(object):
+    def flatten(self, root):
+        """
+        :type root: TreeNode
+        :rtype: None Do not return anything, modify root in-place instead.
+        """
+        if not root:
+            return root
+        pre=root
+        curr=root.left
+        stack=[]
+        if pre.right:				#避免根节点的左子树为空，根节点的右子树为非空的情况
+            stack.append(pre.right)
+            pre.right=None
+        while(curr or stack):
+            if curr:
+                if curr.right:
+                    stack.append(curr.right)
+                pre.right=curr
+                pre.left = None
+                pre=pre.right
+                curr=curr.left
+            else:
+                curr=stack.pop()
+        return root
+```
+
+# 20200705
+
+## 1-leetcode 128.最长连续序列
+
+```python
+class Solution(object):
+    def longestConsecutive(self, nums):
+        """
+        :type nums: List[int]
+        :rtype: int
+        """
+        long_n=0
+        set_nums=set(nums)
+        for num in set_nums:
+            if num-1 not in set_nums:
+                cur_num=num						# 确定新的开头,如果一个数子不是开头，那么就不会进到for循环中
+                cur_long=1
+                while(cur_num+1 in set_nums): # 新的开头的包含的数字
+                    cur_num+=1
+                    cur_long+=1
+                long_n=max(long_n,cur_long)
+        return long_n
+```
+
+## 2-leetcode 124.二叉树中的最大路径和
+
+给定一个非空二叉树，返回其最大路径和。
+
+本题中，路径被定义为一条从树中**任意节点出发**，达到任意节点的序列。该路径至少包含一个节点，且不一定经过根节点。
+
+计算每个节点的最大贡献值：以该节点为根节点的子树中找以该节点为起始节点的一条路径，使得该路径上节点值之和最大
+
+空节点的最大贡献为0，非空节点最大贡献为：节点值与左右子节点中最大贡献值之和。
+
+得到每个节点的最大贡献之后，计算二叉树最大路径和：对于二叉树中的每一个节点，该节点的最大路径：该节点的值与左右节点的最大贡献，如果左右子节点的最大贡献小于0，则不记录该节点的最大路径计算中。
+
+```python
+# Definition for a binary tree node.
+# class TreeNode(object):
+#     def __init__(self, x):
+#         self.val = x
+#         self.left = None
+#         self.right = None
+
+class Solution(object):
+    def __init__(self):
+        self.res=float("-INF")
+    def maxPathSum(self, root):
+        """
+        :type root: TreeNode
+        :rtype: int
+        """
+
+        def dfs(node):
+            if node==None:
+                return 0
+            left_devoted=max(dfs(node.left),0)
+            right_devoted=max(dfs(node.right),0)
+            # print(left_devoted,right_devoted,node.val,self.res)
+            self.res=max(left_devoted+right_devoted+node.val,self.res)  # 更新结果
+            return max(left_devoted,right_devoted)+node.val   # 每个节点的贡献
+        dfs(root)
+        return self.res
+
+```
+
+# 20200711
+
+## 1.leetcoce 乘积最大的子数组
+
+给你一个整数数组 `nums` ，请你找出数组中乘积最大的连续子数组（该子数组中至少包含一个数字），并返回该子数组所对应的乘积。
+
+直接思路：$f_{max}(i)$表示以第i个元素结尾的乘积最大的子数组的积，状态转移方程为
+$$
+f_{max}(i)=\max_{i=1}^n\{f(i-1)*a_i,a_i\}
+$$
+即，$f_{max}(i)$可以考虑nums[i]加入前面$f_{max}(i-1)$对应的一段，或者自成一段，这两种情况取最大值，求出所有的f_i之后，选取一个最大的作为结果。
+
+核心问题：当前位置的最优解不一定是由前一个位置的最优解得到。因为存在正负数
+
+如果当前的数是负数的话，我们希望以num[i-1]为结尾的某一个段的积也是一个负数，负负可以为正。
+
+如果当前数为正，我们希望以num[i-1]为结尾的某一个段的积也是一个正数，正的越多，乘积完越大。
+
+所以再维护一个$f_{min}(i)$表示以第i个元素结尾的乘积最小的子数组的积：
+$$
+f_{max}(i)=\max\{f_{max}(i-1)*a_i,f_{min}(i-1)*a_i,a_i\}\\f_{min}(i)=\min\{f_{max}(i-1)*a_i,f_{min}(i-1)*a_i,a_i\}
+$$
+
+```python
+class Solution(object):
+    def maxProduct(self, nums):
+        """
+        :type nums: List[int]
+        :rtype: int
+        """
+        pre_max_v,pre_min_v=1,1
+        res=float("-INF")
+        for val in nums:
+            max_v=max(pre_max_v*val,pre_min_v*val,val)   
+            min_v=min(pre_max_v*val,pre_min_v*val,val)
+            pre_max_v,pre_min_v=max_v,min_v
+            res=max(max_v,res)
+        return res
+```
+
+
+
+
+
+```python
+class Solution(object):
+    def numTrees(self, n):
+        """
+        :type n: int
+        :rtype: int
+        """
+        dp=[0]*(n+1)
+        dp[0],dp[1]=1,1
+        for i in range(2,n+1):
+            for j in range(1,i+1):        #
+                dp[i]+=dp[j-1]*dp[i-j]
+        return dp[-1]
+
+```
+
+
+
+## 2-leetcode 98.验证二叉搜索树
+
+### 1.中序遍历是一个升序
+
+技巧：前一个遍历元素的初始化。
+
+```python
+# Definition for a binary tree node.
+# class TreeNode(object):
+#     def __init__(self, x):
+#         self.val = x
+#         self.left = None
+#         self.right = None
+
+class Solution(object):
+    def isValidBST(self, root):
+        """
+        :type root: TreeNode
+        :rtype: bool
+        """
+        pre_val=0
+        node=root
+        while(node):
+            pre_val=node.val-1
+            node=node.left
+        node,stack=root,[]
+        while(stack or node):
+            if node:
+                stack.append(node)
+                node=node.left
+            else:
+                node=stack.pop()
+                if node.val<=pre_val:
+                    return False
+                pre_val=node.val
+                node=node.right
+        return True
+
+
+            
+```
+
+
+
+### 2.递归，维护一个子树取值的上下界
+
+```python
+# Definition for a binary tree node.
+# class TreeNode(object):
+#     def __init__(self, x):
+#         self.val = x
+#         self.left = None
+#         self.right = None
+
+class Solution(object):
+    def isValidBST(self, root):
+        """
+        :type root: TreeNode
+        :rtype: bool
+        """
+        def dfs(node,low,high):
+            if node==None:
+                return True
+            if node.val<=low or node.val>=high:
+                return False
+            if  not dfs(node.left,low,node.val):  # 只要有一个不满足，就错，
+                return False
+            if  not dfs(node.right,node.val,high):# 对的情况很复杂
+                return False
+            return True
+        return dfs(root,float("-INf"),float("INF"))
+            
+```
+
+
+
+# 20200703
+
+## 1-leetcode 84.柱状图中的最大矩形
+
+考虑的两个最基本的要素：宽和高
+
+暴力法求解：两层循环枚举宽度，高度为宽度范围内最小数组数值。时间复杂度为o(n^2)
+
+单调栈：枚举高，枚举某一根柱子I作为高h=height[i]; 向两侧进行扩展，使得柱子的高度均不小于h,直至找到i能够扩展到的最大范围
+
+难点：求出一根柱子左侧最近且高度小于height[i]的柱子 的标号
+
+​	性质：两根柱子标号j0<j1且height[j0]<height[j1],那么j0一定不是j1后面柱子的左侧最近最矮柱子。
+
+​	解决：维护一个数据结构，存放柱子下标：j0,j1,....js,有height[j0]<height[j1]<,...,<height[js]
+
+```python
+class Solution(object):
+    def largestRectangleArea(self, heights):
+        """
+        :type heights: List[int]
+        :rtype: int
+        """
+        n=len(heights)
+        left,right=[0]*n,[0]*n
+        momo_stack=[]
+        for i in range(n):
+            while(momo_stack and heights[i]<=heights[momo_stack[-1]]):
+                momo_stack.pop()
+            left[i]=momo_stack[-1] if momo_stack else -1
+            momo_stack.append(i)
+        momo_stack=[]
+        for i in range(n-1,-1,-1):
+            while(momo_stack and heights[momo_stack[-1]]>=heights[i]):
+                momo_stack.pop()
+            right[i]=momo_stack[-1] if momo_stack else n
+            momo_stack.append(i)
+        ans=0
+        #print(left,right)
+        for i in range(n):
+            ans=max(ans,(right[i]-left[i]-1)*heights[i])  # 宽度：right-left+1-2
+        return ans
+
+```
+
+# 20200704
+
+## 1-leetcode 114.二叉树展开成链表
+
+从一棵二叉树展开成一个先序遍历顺序的链表。
+
+实际操作，将二叉树的右子树推入堆栈，将左子树接到右子树位置，将左子树置为None，将当前处理节点转换成右子树节点，不断递归往下，直至当前节点的左子树为None，从堆栈中弹出最后进去的右子树进行处理。
+
+```python
+# Definition for a binary tree node.
+# class TreeNode(object):
+#     def __init__(self, x):
+#         self.val = x
+#         self.left = None
+#         self.right = None
+
+class Solution(object):
+    def flatten(self, root):
+        """
+        :type root: TreeNode
+        :rtype: None Do not return anything, modify root in-place instead.
+        """
+        if not root:
+            return root
+        pre=root
+        curr=root.left
+        stack=[]
+        if pre.right:				#避免根节点的左子树为空，根节点的右子树为非空的情况
+            stack.append(pre.right)
+            pre.right=None
+        while(curr or stack):
+            if curr:
+                if curr.right:
+                    stack.append(curr.right)
+                pre.right=curr
+                pre.left = None
+                pre=pre.right
+                curr=curr.left
+            else:
+                curr=stack.pop()
+        return root
+```
+
+# 20200705
+
+## 1-leetcode 128.最长连续序列
+
+```python
+class Solution(object):
+    def longestConsecutive(self, nums):
+        """
+        :type nums: List[int]
+        :rtype: int
+        """
+        long_n=0
+        set_nums=set(nums)
+        for num in set_nums:
+            if num-1 not in set_nums:
+                cur_num=num						# 确定新的开头,如果一个数子不是开头，那么就不会进到for循环中
+                cur_long=1
+                while(cur_num+1 in set_nums): # 新的开头的包含的数字
+                    cur_num+=1
+                    cur_long+=1
+                long_n=max(long_n,cur_long)
+        return long_n
+```
+
+## 2-leetcode 124.二叉树中的最大路径和
+
+给定一个非空二叉树，返回其最大路径和。
+
+本题中，路径被定义为一条从树中**任意节点出发**，达到任意节点的序列。该路径至少包含一个节点，且不一定经过根节点。
+
+计算每个节点的最大贡献值：以该节点为根节点的子树中找以该节点为起始节点的一条路径，使得该路径上节点值之和最大
+
+空节点的最大贡献为0，非空节点最大贡献为：节点值与左右子节点中最大贡献值之和。
+
+得到每个节点的最大贡献之后，计算二叉树最大路径和：对于二叉树中的每一个节点，该节点的最大路径：该节点的值与左右节点的最大贡献，如果左右子节点的最大贡献小于0，则不记录该节点的最大路径计算中。
+
+```python
+# Definition for a binary tree node.
+# class TreeNode(object):
+#     def __init__(self, x):
+#         self.val = x
+#         self.left = None
+#         self.right = None
+
+class Solution(object):
+    def __init__(self):
+        self.res=float("-INF")
+    def maxPathSum(self, root):
+        """
+        :type root: TreeNode
+        :rtype: int
+        """
+
+        def dfs(node):
+            if node==None:
+                return 0
+            left_devoted=max(dfs(node.left),0)
+            right_devoted=max(dfs(node.right),0)
+            # print(left_devoted,right_devoted,node.val,self.res)
+            self.res=max(left_devoted+right_devoted+node.val,self.res)  # 更新结果
+            return max(left_devoted,right_devoted)+node.val   # 每个节点的贡献
+        dfs(root)
+        return self.res
+
+```
+
+# 20200711
+
+## 1.leetcoce 乘积最大的子数组
+
+给你一个整数数组 `nums` ，请你找出数组中乘积最大的连续子数组（该子数组中至少包含一个数字），并返回该子数组所对应的乘积。
+
+直接思路：$f_{max}(i)$表示以第i个元素结尾的乘积最大的子数组的积，状态转移方程为
+$$
+f_{max}(i)=\max_{i=1}^n\{f(i-1)*a_i,a_i\}
+$$
+即，$f_{max}(i)$可以考虑nums[i]加入前面$f_{max}(i-1)$对应的一段，或者自成一段，这两种情况取最大值，求出所有的f_i之后，选取一个最大的作为结果。
+
+核心问题：当前位置的最优解不一定是由前一个位置的最优解得到。因为存在正负数
+
+如果当前的数是负数的话，我们希望以num[i-1]为结尾的某一个段的积也是一个负数，负负可以为正。
+
+如果当前数为正，我们希望以num[i-1]为结尾的某一个段的积也是一个正数，正的越多，乘积完越大。
+
+所以再维护一个$f_{min}(i)$表示以第i个元素结尾的乘积最小的子数组的积：
+$$
+f_{max}(i)=\max\{f_{max}(i-1)*a_i,f_{min}(i-1)*a_i,a_i\}\\f_{min}(i)=\min\{f_{max}(i-1)*a_i,f_{min}(i-1)*a_i,a_i\}
+$$
+
+```python
+class Solution(object):
+    def maxProduct(self, nums):
+        """
+        :type nums: List[int]
+        :rtype: int
+        """
+        pre_max_v,pre_min_v=1,1
+        res=float("-INF")
+        for val in nums:
+            max_v=max(pre_max_v*val,pre_min_v*val,val)   
+            min_v=min(pre_max_v*val,pre_min_v*val,val)
+            pre_max_v,pre_min_v=max_v,min_v
+            res=max(max_v,res)
+        return res
+```
+
